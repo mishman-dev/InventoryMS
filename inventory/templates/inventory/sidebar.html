@@ -1,0 +1,47 @@
+{% load static %}
+<!-- sidebar.html -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<div class="w-64 bg-white shadow-2xl h-screen fixed left-0 top-0 flex flex-col border-r border-gray-200">
+    <div class="px-6 py-4 flex text-2xl font-semibold tracking-wide border-b border-gray-100">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-9 h-10 mr-2">
+        <span class="text-blue-600">InventoryMS</span>
+    </div>
+    <nav class="flex-1 px-4 py-6 space-y-2">
+        <a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">dashboard</span> Dashboard
+        </a>
+        <a href="{% url 'item_tab' %}" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">group</span> Items
+        </a>
+        <a href="{% url 'issue_list' %}" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">sell</span> Issues
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">shopping_bag</span> Purchases
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">folder</span> Projects 
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">category</span> Categories
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">warehouse</span> Suppliers
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">group</span> Employees
+        </a>
+        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:text-blue-400">
+            <span class="material-icons-outlined mr-3 text-gray-600">settings</span> Settings
+        </a>
+    </nav>
+    <div class="px-4 py-4 border-t border-gray-100">
+        <a href="/admin" class="flex items-center  hover:text-gray-600">
+            <span class="material-icons-outlined mr-2">lock</span> Admin Panel
+        </a>
+        <a href="#" class="flex items-center  hover:text-gray-600 py-6">
+            <span class="material-icons-outlined mr-2">logout</span> Logout
+        </a>
+    </div>
+</div>

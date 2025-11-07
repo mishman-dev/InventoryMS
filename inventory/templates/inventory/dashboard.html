@@ -1,0 +1,624 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Dashboard | Inventory Management{% endblock %}
+{% block content %}
+<style>
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-slideDown {
+        animation: slideDown 0.5s ease-out;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.5s ease-out both;
+    }
+
+    .delay-100 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    .delay-300 {
+        animation-delay: 0.3s;
+    }
+
+    .delay-400 {
+        animation-delay: 0.4s;
+    }
+
+    .delay-500 {
+        animation-delay: 0.5s;
+    }
+
+    #lowStockTicker,
+    #outStockTicker {
+        transition: opacity 0.4s ease-in-out;
+    }
+</style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen p-8">
+    <div class=" mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8 animate-slideDown">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h1
+                    class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Inventory Dashboard
+                </h1>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="addItemBtn"
+                        class="flex px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                        <span class="material-icons-outlined text-white ">add</span> Add Product
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Products -->
+            <div
+                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600"></div>
+                <div
+                    class="flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 text-2xl mb-4">
+                    <span class="material-icons-outlined">storefront</span>
+                </div>
+                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Total Products</div>
+                <div class="text-3xl font-bold text-gray-900 mb-2">{{ total_products }}</div>
+            </div>
+
+            <!-- In Stock -->
+            <div
+                class="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-600 to-emerald-600"></div>
+                <div
+                    class="flex items-center justify-center w-12 h-12 rounded-xl bg-green-100 text-green-600 text-2xl mb-4">
+                    <span class="material-icons-outlined">check_circle</span>
+                </div>
+                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">In Stock</div>
+                <div class="text-3xl font-bold text-gray-900 mb-2">{{ in_stock }}</div>
+            </div>
+
+            <!-- Low Stock -->
+            <div class="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 to-yellow-600"></div>
+                <div
+                    class="flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 text-2xl mb-4">
+                    <span class="material-icons-outlined">warning</span>
+                </div>
+                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Low Stock</div>
+                <div class="text-3xl font-bold text-gray-900 mb-2">{{ low_stock.count }}</div>
+
+                <!-- News ticker -->
+                <div class="h-6 overflow-hidden relative text-center">
+                    <div id="lowStockTicker"
+                        class="absolute inset-0 flex items-center justify-center text-sm text-gray-700 font-medium">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Out of Stock -->
+            <div class="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 to-pink-600"></div>
+                <div
+                    class="flex items-center justify-center w-12 h-12 rounded-xl bg-red-100 text-red-600 text-2xl mb-4">
+                    <span class="material-icons-outlined">production_quantity_limits</span>
+                </div>
+                <div class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Out of Stock</div>
+                <div class="text-3xl font-bold text-gray-900 mb-2">{{ out_of_stock.count }}</div>
+
+                <!-- News ticker -->
+                <div class="h-6 overflow-hidden relative text-center">
+                    <div id="outStockTicker"
+                        class="absolute inset-0 flex items-center justify-center text-sm text-gray-700 font-medium">
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Product Inventory Table -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 animate-fadeInUp delay-500">
+                <!-- Card Header -->
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">Inventory Items</h2>
+                    <div class="relative w-full sm:w-72">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                        <input type="text" placeholder="Search products..." id="searchInput" oninput="filterProducts()"
+                            class="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-300">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full justify-content">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Product</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Category</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Unit</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Stock</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Reorder Level</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Price</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTable" class="divide-y divide-gray-200">
+                            {% for item in items %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-200 {% if forloop.counter > 6 %}hidden{% endif %}"
+                                data-name="{{ item.name|lower }}">
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 text-xl flex-shrink-0">
+                                            {% if item.category %}
+                                            {% if 'power' in item.category.name|lower %}
+                                            🔌
+                                            {% elif 'hand' in item.category.name|lower %}
+                                            🔧
+                                            {% elif 'fastener' in item.category.name|lower or 'fixing' in
+                                            item.category.name|lower %}
+                                            🔩
+                                            {% elif 'electrical' in item.category.name|lower %}
+                                            💡
+                                            {% elif 'plumbing' in item.category.name|lower %}
+                                            🚰
+                                            {% elif 'building' in item.category.name|lower %}
+                                            🧱
+                                            {% elif 'adhesive' in item.category.name|lower or 'sealant' in
+                                            item.category.name|lower %}
+                                            🧴
+                                            {% elif 'paint' in item.category.name|lower %}
+                                            🎨
+                                            {% elif 'safety' in item.category.name|lower or 'ppe' in
+                                            item.category.name|lower %}
+                                            🦺
+                                            {% elif 'fitting' in item.category.name|lower or 'hardware' in
+                                            item.category.name|lower %}
+                                            🪛
+                                            {% elif 'abrasive' in item.category.name|lower or 'consumable' in
+                                            item.category.name|lower %}
+                                            ⚙️
+                                            {% elif 'hvac' in item.category.name|lower or 'ventilation' in
+                                            item.category.name|lower %}
+                                            🌬️
+                                            {% elif 'garden' in item.category.name|lower or 'outdoor' in
+                                            item.category.name|lower %}
+                                            🌿
+                                            {% elif 'storage' in item.category.name|lower %}
+                                            📦
+                                            {% elif 'machinery' in item.category.name|lower or 'equipment' in
+                                            item.category.name|lower %}
+                                            🏗️
+                                            {% else %}
+                                            📦
+                                            {% endif %}
+                                            {% else %}
+                                            📦
+                                            {% endif %}
+
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-sm text-gray-900">{{ item.name }}</h4>
+                                            <p class="text-sm text-gray-500">
+                                                {{ item.default_unit_of_measure }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3">
+                                    {% if item.current_stock == 0 %}
+                                    <span
+                                        class="inline-block px-1 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-md uppercase">Out
+                                        of Stock</span>
+                                    {% elif item.current_stock <= item.reorder_level %} <span
+                                        class="inline-block px-1 py-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-md uppercase">
+                                        Low Stock</span>
+                                        {% else %}
+                                        <span
+                                            class="inline-block px-1 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-md uppercase">In
+                                            Stock</span>
+                                        {% endif %}
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-600">
+                                    {% if item.category.category_name %}
+                                    {{ item.category.get_category_name_display }}
+                                    {% else %}
+                                    <span class="italic">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-600">{{ item.default_unit_of_measure }}</td>
+                                <td
+                                    class="px-4 py-4 text-sm font-semibold {% if item.current_stock == 0 %}text-red-600{% elif item.current_stock <= item.reorder_level %}text-amber-600{% else %}text-gray-900{% endif %}">
+                                    {{ item.current_stock }}
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-600">{{ item.reorder_level }}</td>
+                                <td class="px-4 py-4 text-sm font-semibold text-gray-900">
+                                    රු.{{item.unit_price|floatformat:2 }}</td>
+                                {% if request.user.is_superuser %}
+                                <td class="px-4 py-4">
+                                    <div class="flex gap-2">
+                                        <a href="#"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-all duration-200 hover:scale-110">
+                                            ✏️
+                                        </a>
+                                        <a href="#"
+                                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-200 hover:scale-110"
+                                            onclick="return confirm('Are you sure you want to delete {{ item.name }}?')">
+                                            🗑️
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="text-5xl">📦</div>
+                                        <p class="text-lg font-semibold">No items found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 animate-fadeInUp delay-500">
+                <div class="mb-6 pb-4 border-b-2 border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">Recent Activity</h2>
+                </div>
+
+                <div id="activityFeed" class="space-y-3">
+                    {% for log in activities %}
+                    <div class="p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex gap-3">
+                            {% if log.action_flag == 1 %}
+                            <div
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 text-green-600 flex-shrink-0">
+                                ➕</div>
+                            {% elif log.action_flag == 2 %}
+                            <div
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex-shrink-0">
+                                🔄</div>
+                            {% elif log.action_flag == 3 %}
+                            <div
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-red-100 text-red-600 flex-shrink-0">
+                                ❌</div>
+                            {% else %}
+                            <div
+                                class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
+                                📦</div>
+                            {% endif %}
+
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900 mb-1">
+                                    {{ log.get_action_flag_display }}
+                                </h4>
+                                <p class="text-sm text-gray-500">
+                                    {{ log.content_type.model|capfirst }}: {{ log.object_repr }}
+                                </p>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    by {{ log.user }} • {{ log.action_time|timesince }} ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-center">No recent activity</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="addModal"
+                class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
+                    <h2 class="text-2xl font-semibold mb-4">Add New Product</h2>
+                    <form id="addItemForm" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-gray-700 mb-1">Name</label>
+                            <input name="name" type="text" required
+                                class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Category</label>
+                            <select name="category" class="w-full border rounded-lg px-4 py-2">
+                                <option value="">— None —</option>
+                                {% for item in items %}
+                                {% if item.category and item.category.get_category_name_display %}
+                                <option value="{{ forloop.counter }}">
+                                    {{ item.category.get_category_name_display }}
+                                </option>
+                                {% endif %}
+
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 mb-1">Unit</label>
+                                <input name="default_unit_of_measure" type="text" required
+                                    class="w-full border rounded-lg px-4 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-1">Unit Price</label>
+                                <input name="unit_price" type="number" step="0.01" required
+                                    class="w-full border rounded-lg px-4 py-2">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 mb-1">Current Stock</label>
+                            <input name="current_stock" type="number" min="0" required
+                                class="w-full border rounded-lg px-4 py-2">
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-4">
+                            <button type="button" id="closeModal"
+                                class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+                            <button type="submit"
+                                class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">Add Item</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    </div>
+    <script>
+        const modal = document.getElementById('addModal');
+        const addBtn = document.getElementById('addItemBtn');
+        const closeBtn = document.getElementById('closeModal');
+        const form = document.getElementById('addItemForm');
+        const table = document.getElementById('itemTable');
+
+        // Open and close modal
+        addBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // prevent background scroll
+        });
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+
+        // Handle form submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const res = await fetch("{% url 'add_item' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const item = data.item;
+
+                    // ✅ Ensure table body is found
+                    const table = document.getElementById('itemTableBody');
+                    if (!table) {
+                        console.error('❌ Table body element not found.');
+                        return;
+                    }
+
+                    // Create new table row
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'hover:bg-gray-50 transition';
+                    newRow.innerHTML = `
+                <td class="px-6 py-4 text-sm font-medium">${item.item_code}</td>
+                <td class="px-6 py-4 text-sm">${item.name}</td>
+                <td class="px-6 py-4 text-sm">${item.category?.get_category_name_display || ''}</td>
+                <td class="px-6 py-4 text-sm">රු. ${parseFloat(item.unit_price).toFixed(2)}</td>
+                <td class="px-6 py-4 text-sm">${item.current_stock}</td>
+                <td class="px-6 py-4 text-sm">${item.reorder_level}</td>
+                <td class="px-6 py-4 text-sm">${item.warrenty || '-'}</td>
+            `;
+
+                    // ✅ Add to table
+                    table.appendChild(newRow);
+
+            // ✅ Reset and close modal cleanly
+            form.reset();
+            closeModal();
+
+            // Small success feedback (optional)
+            const toast = document.createElement('div');
+            toast.textContent = '✅ Item added successfully!';
+            toast.className = 'fixed bottom-6 right-6 bg-blue-500 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center space-x-2 backdrop-blur-sm border border-blue-400/30 transition-all duration-300 ease-in-out transform translate-y-2 opacity-0';
+
+            // Add subtle animation
+            document.body.appendChild(toast);
+            setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Hide after a few seconds
+            setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+            setTimeout(() => toast.remove(), 300);
+            }, 3000);
+
+        } else {
+            alert('❌ Failed to add item. Please try again.');
+        }
+        } catch (err) {
+        console.error(err);
+        alert('⚠️ An error occurred while adding the item.');
+        }
+        });
+
+        // Optional: Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+
+        const searchInput = document.getElementById('searchInput');
+        const tableRows = document.querySelectorAll('#itemTable tr');
+
+        searchInput.addEventListener('input', function () {
+            const term = this.value.toLowerCase();
+            tableRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        // Optional: Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#productTable tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+
+
+        function filterProducts() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#productTable tr");
+
+            rows.forEach((row, index) => {
+                const name = row.dataset.name || "";
+                if (searchInput === "") {
+                    // Show only first 6 when input is cleared
+                    row.classList.toggle("hidden", index >= 6);
+                } else {
+                    // Show only matching rows
+                    row.classList.toggle("hidden", !name.includes(searchInput));
+                }
+            });
+        }
+
+        function addProduct() {
+            alert('Add Product functionality - Connect to Django backend\nEndpoint: POST /api/products/');
+        }
+
+        function editProduct(id) {
+            alert(`Edit Product ${id} - Connect to Django backend\nEndpoint: PUT /api/products/${id}/`);
+        }
+
+        function deleteProduct(id) {
+            if (confirm(`Are you sure you want to delete product ${id}?`)) {
+                alert(`Delete Product ${id} - Connect to Django backend\nEndpoint: DELETE /api/products/${id}/`);
+            }
+        }
+
+        function refreshData() {
+            alert('Refresh Data - Connect to Django backend\nEndpoint: GET /api/products/');
+            location.reload();
+        }
+        function startTicker(elementId, items, delay = 2500) {
+            const ticker = document.getElementById(elementId);
+            if (!ticker || items.length === 0) {
+                ticker.textContent = "No items";
+                return;
+            }
+
+            let index = 0;
+
+            const showNext = () => {
+                // fade out
+                ticker.style.opacity = 0;
+                setTimeout(() => {
+                    ticker.textContent = `${items[index]}`;
+                    ticker.style.opacity = 1;
+                    index = (index + 1) % items.length;
+                }, 300);
+            };
+
+            showNext();
+            setInterval(showNext, delay);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const lowStockItems = [
+                {% for item in low_stock %}
+                    "{{ item.name }} ({{ item.current_stock }})",
+            {% endfor %}
+            ];
+        const outStockItems = [
+            {% for item in out_of_stock %}
+        "{{ item.name }}",
+            {% endfor %}
+            ];
+
+        startTicker("lowStockTicker", lowStockItems,);
+        startTicker("outStockTicker", outStockItems,);
+        });
+    </script>
+    {% endblock %}

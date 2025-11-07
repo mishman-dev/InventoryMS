@@ -1,0 +1,19 @@
+<!-- templates/inventory/base.html -->
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Dashboard{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+</head>
+<body class="bg-slate-100 flex">
+  {% include 'inventory/sidebar.html' %}
+  <div class="ml-64 flex-1 p-8">
+    {% block content %}
+    <!-- Main content will be injected here -->
+    {% endblock %}
+  </div>
+</body>
+</html>
