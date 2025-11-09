@@ -27,31 +27,11 @@ class Supplier(models.Model):
         return f"{self.name}'s contact person - {self.contact_person}"
 
 class Category(models.Model):
-    categories = [
-        ('power_tools', 'Power Tools'),
-        ('hand_tools', 'Hand Tools'),
-        ('fasteners', 'Fasteners & Fixings'),
-        ('electrical', 'Electrical Components'),
-        ('plumbing', 'Plumbing & Piping'),
-        ('building_materials', 'Building Materials'),
-        ('adhesives', 'Adhesives & Sealants'),
-        ('paints', 'Paints & Finishes'),
-        ('safety_ppe', 'Safety Equipment & PPE'),
-        ('fittings', 'Hardware Fittings'),
-        ('abrasives', 'Abrasives & Consumables'),
-        ('hvac', 'HVAC & Ventilation'),
-        ('garden', 'Garden & Outdoor'),
-        ('storage', 'Storage & Organization'),
-        ('machinery', 'Machinery & Equipment'), 
-    ]
     category_id = models.CharField(max_length=421, unique=True, null=True)
-    category_name = models.CharField(max_length=25, choices=categories, default='paints')
+    category_name = models.CharField(max_length=25, default='General')    
 
 
     def __str__(self):
-        for category in self.categories:
-            if self.category_name == category[0]:
-                return category[1]  # Return the display name
         return self.category_name 
 
 class Item(models.Model):
@@ -105,24 +85,8 @@ class Issue(models.Model):
     issue_date = models.DateField(default=timezone.now)
     remarks = models.TextField(blank=True, null=True)
 
+    items = models.ManyToManyField('Item', related_name='issue_items', blank=True)
+
     def __str__(self):
         return f"Issue {self.utilize_no} - {self.issued_to.first_name}"
     
-
-class IssueItem(models.Model):
-    issue = models.ForeignKey(Issue, related_name='items', on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity_issued = models.PositiveIntegerField()
-
-    def save(self, *args, **kwargs):
-        # Decrease stock automatically
-        if self.item.current_stock >= self.quantity_issued:
-            self.item.current_stock -= self.quantity_issued
-            self.item.save()
-            super().save(*args, **kwargs)
-        else:
-            raise ValueError(f"Not enough stock for item {self.item.name}")
-
-    def __str__(self):
-        return f"{self.item.name} x {self.quantity_issued}"
-

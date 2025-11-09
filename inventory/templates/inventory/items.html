@@ -2,9 +2,9 @@
 
 {% block title %}Items | Inventory Management{% endblock %}
 {% block content %}
-<div class="mx-auto py-10 px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-semibold text-gray-800">Item List</h1>
+<div class="mx-auto py-2 px-4 sm:px-6 lg:px-2">
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-slideDown flex justify-between">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Item List</h1>
         <div class="flex space-x-3">
             <!-- 🔽 Filter Dropdown -->
             <form method="get" class="flex items-center space-x-2">
@@ -50,17 +50,10 @@
 
         <tbody id="itemTable" class="divide-y divide-gray-100">
           {% for item in items %}
-        <tr class="
-          {% if item.current_stock == 0 %}
-            bg-red-100
-          {% elif item.current_stock <= item.reorder_level %}
-            bg-yellow-50
-          {% endif %}
-        ">
-
+        <tr class="{% if item.current_stock == 0 %} bg-red-100 {% elif item.current_stock <= item.reorder_level %} bg-yellow-50 {% endif %}">
             <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ item.item_code }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ item.name }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ item.category.get_category_name_display|default:"—" }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">{{ item.category.category_name|default:"—" }}</td>
             <td class="px-6 py-4 text-sm text-gray-700">රු. {{ item.unit_price|floatformat:2 }}</td>
             <td class="px-6 py-4 text-sm">
               {% if item.current_stock <= item.reorder_level %}
@@ -126,7 +119,10 @@
           <label class="block text-gray-700 mb-1">Current Stock</label>
           <input name="current_stock" type="number" min="0" required class="w-full border rounded-lg px-4 py-2">
         </div>
-
+        <div>
+          <label class="block text-gray-700 mb-1">Warrenty (if applicable)</label>
+          <input name="warrenty" type="date"class="w-full border rounded-lg px-4 py-2">
+        </div>
         <div class="flex justify-end space-x-3 pt-4">
           <button type="button" id="closeModal" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
           <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">Add Item</button>
@@ -157,19 +153,20 @@
 
     // Handle form submit
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    e.preventDefault();
+    const formData = new FormData(form);
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        try {
+    try {
         const res = await fetch("{% url 'add_item' %}", {
             method: 'POST',
             headers: { 'X-CSRFToken': csrfToken },
             body: formData
         });
+
         const data = await res.json();
 
-        if (data.success) {
+        if (res.ok && data.success) {
             const item = data.item;
 
             const newRow = document.createElement('tr');
@@ -177,7 +174,7 @@
             newRow.innerHTML = `
             <td class="px-6 py-4 text-sm font-medium">${item.item_code}</td>
             <td class="px-6 py-4 text-sm">${item.name}</td>
-            <td class="px-6 py-4 text-sm">${item.category}</td>
+            <td class="px-6 py-4 text-sm">${item.category_name || '-'}</td>
             <td class="px-6 py-4 text-sm">Rs. ${item.unit_price}</td>
             <td class="px-6 py-4 text-sm">${item.current_stock}</td>
             <td class="px-6 py-4 text-sm">${item.reorder_level}</td>
@@ -185,37 +182,29 @@
             `;
             table.appendChild(newRow);
 
-            // ✅ Reset and close modal cleanly
             form.reset();
             closeModal();
 
-            // Small success feedback (optional)
-            const toast = document.createElement('div');
-            toast.textContent = '✅ Item added successfully!';
-            toast.className = 'fixed bottom-6 right-6 bg-blue-500 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center space-x-2 backdrop-blur-sm border border-blue-400/30 transition-all duration-300 ease-in-out transform translate-y-2 opacity-0';
-
-            // Add subtle animation
-            document.body.appendChild(toast);
-            setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
-            }, 100);
-
-            // Hide after a few seconds
-            setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(10px)';
-            setTimeout(() => toast.remove(), 300);
-            }, 3000);
-
+            showToast('✅ Item added successfully!');
         } else {
-            alert('❌ Failed to add item. Please try again.');
+            // show meaningful error from server
+            const msg = data && data.error ? data.error : 'Failed to add item. Please try again.';
+            console.error('Add item error:', data);
+            alert('❌ ' + msg);
         }
-        } catch (err) {
+    } catch (err) {
         console.error(err);
-        alert('⚠️ An error occurred while adding the item.');
-        }
-    });
+        alert('⚠️ Network or server error occurred while adding the item.');
+    }
+});
+
+function showToast(text) {
+    const toast = document.createElement('div');
+    toast.textContent = text;
+    toast.className = 'fixed bottom-6 right-6 bg-blue-500 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 
     // Optional: Close modal when clicking outside
     window.addEventListener('click', (e) => {

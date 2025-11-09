@@ -1,0 +1,83 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Category | Inventory Management{% endblock %}
+{% block content %}
+{% load static %}
+<body class="bg-gray-100 font-sans">
+    <div class=" mx-auto py-2 px-6">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8 animate-slideDown flex justify-between">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Category Management</h1>
+            <button onclick="toggleModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium flex items-center">
+            <span class="material-icons-outlined text-white text-sm mr-1">add</span>
+            Add Category
+            </button>
+        </div>
+
+        <!-- Category List -->
+        <div class="overflow-hidden rounded-lg shadow">
+            <table class="min-w-full divide-y divide-gray-200 bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Category ID</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold">Category Name</th>
+                        <th class="px-6 py-3 text-center text-sm font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for cat in categories %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-gray-600 font-mono">{{ cat.category_id }}</td>
+                        <td class="px-6 py-4 text-gray-800 font-semibold">{{ cat.category_name }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'category_edit' cat.id %}" 
+                                class="inline-block text-indigo-600 hover:text-indigo-800 transition transform hover:scale-110 mx-2">
+                                ✏️ Edit
+                            </a>
+                            <a href="{% url 'category_delete' cat.id %}" 
+                                onclick="return confirm('Are you sure you want to delete {{ cat.category_name }}?')" 
+                                class="inline-block text-red-600 hover:text-red-800 transition transform hover:scale-110 mx-2">
+                                🗑️ Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-gray-500">No categories found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Add New Category</h2>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input name="category_name" type="text" required
+                    placeholder="Enter category name"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-4">
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="toggleModal()"
+                        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+                        Add
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal() {
+            document.getElementById("modal").classList.toggle("hidden");
+            document.getElementById("modal").classList.toggle("flex");
+        }
+    </script>
+</body>
+{% endblock %}

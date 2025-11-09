@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from django.db.models import F
+from django.shortcuts import render,get_object_or_404
+from django.db.models import F, Prefetch
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
@@ -14,8 +14,13 @@ from django.db.models import Q
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
-from .models import Issue, Employee, Project, Item, IssueItem
+from .models import Issue, Employee, Project, Item
 from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.utils.dateparse import parse_date
+from django.core.exceptions import ValidationError
+from decimal import Decimal, InvalidOperation
+
 
 
 def issue_list(request):
@@ -138,7 +143,7 @@ def export_issues_excel(request):
 def dashboard(request):
     items = Item.objects.select_related('category').all()
     all_items = Item.objects.all()
-    categories = Category.objects.all() 
+    categories = Category.objects.all()
     dashboard_items = Item.objects.all()[:6]
     # Calculate statistics
     total_products = items.count()
@@ -166,6 +171,7 @@ def item_tab(request):
     items_cat = Item.objects.all().select_related('category_name')
     filter_type = request.GET.get('filter', 'all')
     search_query = request.GET.get('search', '')
+    categories = Category.objects.all()
 
     # Filter logic
     if filter_type == 'low_stock':
@@ -184,6 +190,7 @@ def item_tab(request):
         'filter_type': filter_type,
         'search_query': search_query,
         'items': items,
+        'categories':categories,
     }
     return render(request, 'inventory/items.html', context)
 
@@ -194,60 +201,122 @@ def generate_item_code():
         if not Item.objects.filter(item_code=code).exists():
             return code
 
+def category_list(request):
+    if request.method == "POST":
+        # Add new category
+        name = request.POST.get("category_name")
+        if name:
+            category_id = get_random_string(8).upper()
+            Category.objects.create(category_id=category_id, category_name=name)
+            messages.success(request, "Category added successfully!")
+        return redirect("category_list")
 
-@csrf_exempt
+    categories = Category.objects.all().order_by("category_name")
+    return render(request, "inventory/category_list.html", {"categories": categories})
+
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    category.delete()
+    messages.success(request, "Category deleted successfully!")
+    return redirect("category_list")
+
+def category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == "POST":
+        category.category_name = request.POST.get("category_name")
+        category.save()
+        messages.success(request, "Category updated successfully!")
+        return redirect("category_list")
+    return render(request, "inventory/category_edit.html", {"category": category})
+
+
+@csrf_exempt   # <-- prefer to REMOVE this in production and rely on CSRF token from the form
 def add_item(request):
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+    try:
+        # READ values
+        name = request.POST.get('name', '').strip()
+        category_id = request.POST.get('category_name')   # you send category_id from select
+        default_unit_of_measure = request.POST.get('default_unit_of_measure', '').strip()
+        unit_price_raw = request.POST.get('unit_price', '').strip()
+        current_stock_raw = request.POST.get('current_stock', '').strip()
+        reorder_level_raw = request.POST.get('reorder_level', '').strip()
+        warranty_raw = request.POST.get('warrenty') or request.POST.get('warranty')  # accept both spellings
+
+        # VALIDATION basics
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name is required'}, status=400)
+
+        # Resolve category (allow blank)
+        category_obj = None
+        if category_id:
+            # You used category.category_id in the select, so lookup by that
+            category_obj = Category.objects.filter(category_id=category_id).first()
+            if not category_obj:
+                return JsonResponse({'success': False, 'error': 'Selected category not found'}, status=400)
+
+        # Convert numeric fields safely
         try:
-            name = request.POST.get('name')
-            category_name = request.POST.get('category_name')
-            default_unit_of_measure = request.POST.get('default_unit_of_measure')
-            unit_price = request.POST.get('unit_price')
-            current_stock = request.POST.get('current_stock')
-            reorder_level = request.POST.get('reorder_level')
+            unit_price = Decimal(unit_price_raw) if unit_price_raw != '' else Decimal('0.00')
+        except (InvalidOperation, ValueError):
+            return JsonResponse({'success': False, 'error': 'Invalid unit price'}, status=400)
 
-            item_code = generate_item_code()
+        try:
+            current_stock = int(current_stock_raw) if current_stock_raw != '' else 0
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid current stock'}, status=400)
 
-            # 🔹 Use the correct lookup field
-            category = Category.objects.get(id=category_name) if category_name else None
-            # OR
-            # category = Category.objects.get(category_id=category_name) if category_name else None
+        try:
+            reorder_level = int(reorder_level_raw) if reorder_level_raw != '' else 0
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid reorder level'}, status=400)
 
-            item = Item.objects.create(
-                item_code=item_code,
-                name=name,
-                category=category,
-                warrenty=timezone.now().date(),
-                default_unit_of_measure=default_unit_of_measure,
-                unit_price=unit_price,
-                current_stock=current_stock,
-                reorder_level=reorder_level,
-            )
+        # Parse warranty date (optional)
+        warranty = None
+        if warranty_raw:
+            warranty = parse_date(warranty_raw)   # returns a date or None
+            if warranty is None:
+                return JsonResponse({'success': False, 'error': 'Invalid warranty date'}, status=400)
 
-            return JsonResponse({
-                'success': True,
-                'item': {
-                    'id': item.id,
-                    'item_code': item.item_code,
-                    'name': item.name,
-                    'category': {
-                        'id': category.id if category else None,
-                        'name': category.category_name if category else "N/A",
-                        'display': category.get_category_name_display() if category else "N/A",
-                    },
-                    'unit_price': float(item.unit_price),
-                    'current_stock': item.current_stock,
-                    'reorder_level': item.reorder_level,
-                    'warrenty': item.warrenty.strftime('%Y-%m-%d') if item.warrenty else "N/A",
-                }
-            })
+        # Generate item code
+        item_code = generate_item_code()   # make sure this function exists and returns a string
 
-        except Category.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Invalid category selected'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+        # Create item - pass the category object (or None) to the FK
+        item = Item.objects.create(
+            item_code=item_code,
+            name=name,
+            category=category_obj,
+            warrenty=warranty,
+            default_unit_of_measure=default_unit_of_measure,
+            unit_price=unit_price,
+            current_stock=current_stock,
+            reorder_level=reorder_level,
+        )
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+        # Prepare response (send category display name for client)
+        category_display = category_obj.category_name if category_obj else None
+
+        return JsonResponse({
+            'success': True,
+            'item': {
+                'id': item.id,
+                'item_code': item.item_code,
+                'name': item.name,
+                'category_name': category_display,
+                'unit_price': float(item.unit_price),
+                'current_stock': item.current_stock,
+                'reorder_level': item.reorder_level,
+                'warrenty': item.warrenty.strftime('%Y-%m-%d') if item.warrenty else "N/A",
+            }
+        })
+
+    except Exception as e:
+        # Log server-side in console for debugging (optional)
+        import traceback; traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 def generate_utilize_no():
     """Generate a unique utilization number"""
@@ -280,12 +349,12 @@ def add_issue(request):
                 remarks=remarks,
                 issue_date=timezone.now().date()
             )
-
+            
             # Create individual IssueItems
             for i in range(len(items)):
                 item_obj = Item.objects.get(id=items[i])
                 qty = int(quantities[i])
-                IssueItem.objects.create(issue=issue, item=item_obj, quantity_issued=qty)
+                Issue.objects.create(issue=issue, item=item_obj, quantity_issued=qty)
 
             return JsonResponse({
                 'success': True,

@@ -2,25 +2,26 @@
 {% block title %}Issue Management | InventoryMS{% endblock %}
 {% block content %}
 {% load static %}
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6366f1',
-                        sidebar: '#1e293b',
-                    }
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#6366f1',
+                    sidebar: '#1e293b',
                 }
             }
         }
-    </script>
+    }
+</script>
 </head>
+
 <body class="bg-gray-100 font-sans">
-        <!-- Main Content -->
-        <main class="flex-1 overflow-x-hidden">
-            <!-- Header -->
-            <div class="bg-white border-b border-gray-200 px-8 py-6 rounded-2xl">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <!-- Main Content -->
+    <main class="flex-1 overflow-x-hidden">
+        <!-- Header -->
+        <div class="bg-white border-b border-gray-200 px-8 shadow-lg py-6 rounded-2xl">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <h1
                     class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     Issues Dashboard
@@ -36,162 +37,200 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Total Issues -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-primary p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <span class="material-icons-outlined text-gray-700">bug_report</span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-medium text-gray-500 uppercase mb-1">Total Issues</div>
+                    <div class="text-3xl font-bold text-gray-900">{{ issues.count }}</div>
+                </div>
+
+                <!-- In Stock -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-green-500 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <span class="material-icons-outlined text-gray-700">schedule</span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-medium text-gray-500 uppercase mb-1">Recent Issues</div>
+                    <div class="text-3xl font-bold text-gray-900">{{ today_issues }}</div>
+                </div>
+
+                <!-- Projects -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-orange-500 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <span class="material-icons-outlined text-gray-700">work_outline</span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-medium text-gray-500 uppercase mb-1">Active Projects</div>
+                    <div class="text-3xl font-bold text-gray-900">{{ projects.count }}</div>
+                </div>
+
+                <!-- Employees -->
+                <div class="bg-white rounded-xl shadow-sm border-t-4 border-blue-500 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span class="material-icons-outlined text-gray-700">group</span>
+                        </div>
+                    </div>
+                    <div class="text-sm font-medium text-gray-500 uppercase mb-1">Employees</div>
+                    <div class="text-3xl font-bold text-gray-900">{{ employees.count }}</div>
+                </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Total Issues -->
-                    <div class="bg-white rounded-xl shadow-sm border-t-4 border-primary p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <span class="material-icons-outlined text-gray-700">bug_report</span>
-                            </div>
-                        </div>
-                        <div class="text-sm font-medium text-gray-500 uppercase mb-1">Total Issues</div>
-                        <div class="text-3xl font-bold text-gray-900">{{ issues.count }}</div>
-                    </div>
+            <!-- Issues List Section -->
+            <div class="bg-white rounded-xl shadow-sm">
+                <!-- Section Header -->
+                <div class="px-8 py-6 border-b border-gray-200">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Issues List</h2>
 
-                    <!-- In Stock -->
-                    <div class="bg-white rounded-xl shadow-sm border-t-4 border-green-500 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <span class="material-icons-outlined text-gray-700">schedule</span>
-                            </div>
-                        </div>
-                        <div class="text-sm font-medium text-gray-500 uppercase mb-1">Recent Issues</div>
-                        <div class="text-3xl font-bold text-gray-900">{{ today_issues }}</div>
-                    </div>
-
-                    <!-- Projects -->
-                    <div class="bg-white rounded-xl shadow-sm border-t-4 border-orange-500 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <span class="material-icons-outlined text-gray-700">work_outline</span>
-                            </div>
-                        </div>
-                        <div class="text-sm font-medium text-gray-500 uppercase mb-1">Active Projects</div>
-                        <div class="text-3xl font-bold text-gray-900">{{ projects.count }}</div>
-                    </div>
-
-                    <!-- Employees -->
-                    <div class="bg-white rounded-xl shadow-sm border-t-4 border-blue-500 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <span class="material-icons-outlined text-gray-700">group</span>
-                            </div>
-                        </div>
-                        <div class="text-sm font-medium text-gray-500 uppercase mb-1">Employees</div>
-                        <div class="text-3xl font-bold text-gray-900">{{ employees.count }}</div>
                     </div>
                 </div>
 
-                <!-- Issues List Section -->
-                <div class="bg-white rounded-xl shadow-sm">
-                    <!-- Section Header -->
-                    <div class="px-8 py-6 border-b border-gray-200">
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <h2 class="text-2xl font-bold text-gray-900">Issues List</h2>
-                            
-                        </div>
-                    </div>
-
-                    <!-- Search and Filters -->
-                    <div class="px-8 py-6 bg-gray-50 border-b border-gray-200">
-                        <form method="get">
-                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-2">
-                                <!-- Search -->
-                                <div class="lg:col-span-3">
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                                        <input type="text" name="search" class="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search issues..." value="{{ search_query }}">
-                                    </div>
-                                </div>
-                                
-                                <!-- Project Filter -->
-                                <div class="lg:col-span-2">
-                                    <select name="project" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">All Projects</option>
-                                        {% for project in projects %}
-                                            <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <!-- Employee Filter -->
-                                <div class="lg:col-span-2">
-                                    <select name="employee" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">All Employees</option>
-                                        {% for employee in employees %}
-                                            <option value="{{ employee.id }}" {% if employee_filter == employee.id|stringformat:"s" %}selected{% endif %}>{{ employee.first_name }} {{ employee.last_name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                
-                                <!-- Start Date -->
-                                <div class="lg:col-span-2">
-                                    <input type="date" name="start_date" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Start Date" value="{{ start_date }}">
-                                </div>
-                                
-                                <!-- End Date -->
-                                <div class="lg:col-span-2">
-                                    <input type="date" name="end_date" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="End Date" value="{{ end_date }}">
-                                </div>
-                                
-                                <!-- Filter Button -->
-                                <div class="lg:col-span-1">
-                                    <button type="submit" class="w-full flex px-4 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                                        <span class="material-icons-outlined text-white ">sort</span>Filter
-                                    </button>
+                <!-- Search and Filters -->
+                <div class="px-8 py-6 bg-gray-50 border-b border-gray-200">
+                    <form method="get">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2">
+                            <!-- Search -->
+                            <div class="lg:col-span-3">
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                                    <input type="text" name="search"
+                                        class="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        placeholder="Search issues..." value="{{ search_query }}">
                                 </div>
                             </div>
-                        </form>
-                    </div>
 
-                    <!-- Table -->
-                    {% if issues %}
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Utilize No</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issued To</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Project</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {% for issue in issues %}
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                <i class="fas fa-box text-gray-600"></i>
-                                            </div>
-                                            <span class="font-medium text-gray-900">{{ issue.utilize_no }}</span>
+                            <!-- Project Filter -->
+                            <div class="lg:col-span-2">
+                                <select name="project"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">All Projects</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Employee Filter -->
+                            <div class="lg:col-span-2">
+                                <select name="employee"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">All Employees</option>
+                                    {% for employee in employees %}
+                                    <option value="{{ employee.id }}" {% if employee_filter == employee.id|stringformat:"s" %}selected{% endif %}>{{ employee.first_name }} {{ employee.last_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Start Date -->
+                            <div class="lg:col-span-2">
+                                <input type="date" name="start_date"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="Start Date" value="{{ start_date }}">
+                            </div>
+
+                            <!-- End Date -->
+                            <div class="lg:col-span-2">
+                                <input type="date" name="end_date"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="End Date" value="{{ end_date }}">
+                            </div>
+
+                            <!-- Filter Button -->
+                            <div class="lg:col-span-1">
+                                <button type="submit"
+                                    class="w-full flex px-4 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                                    <span class="material-icons-outlined text-white ">sort</span>Filter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Table -->
+                {% if issues %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Utilize No</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Issued To</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Project</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Item</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Quantity</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Date</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for issue in issues %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-box text-gray-600"></i>
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                            ISSUED
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ issue.issued_to.first_name }} {{ issue.issued_to.last_name }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {% if issue.project %}
-                                            <span class="text-sm text-gray-900">{{ issue.project.name }}</span>
-                                        {% else %}
-                                            <span class="text-sm text-gray-400">N/A</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm font-medium text-gray-900">{{ issue.item.name }}</span>
+                                        <span class="font-medium text-gray-900">{{ issue.utilize_no }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                        ISSUED
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ issue.issued_to.first_name }} {{ issue.issued_to.last_name }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if issue.project %}
+                                    <span class="text-sm text-gray-900">{{ issue.project }}</span>
+                                    {% else %}
+                                    <span class="text-sm text-gray-400">N/A</span>
+                                    {% endif %}
+                                </td>
+                                    <td class="px-6 py-4 whitespace-nowrap align-top">
+                                        <ul class="text-sm text-gray-900 space-y-1">
+                                        {% for issue in issues %}
+                                            <li>
+                                            <strong>{{ issue.items.name }}</strong>
+                                            <span class="text-gray-500">— x{{ issue.items.quantity }}</span>
+                                            </li>
+                                        {% empty %}
+                                            <li class="text-gray-400 italic">No items</li>
+                                        {% endfor %}
+                                        </ul>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm text-gray-900">{{ issue.quantity_issued }}</span>
@@ -199,425 +238,447 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm text-gray-500">{{ issue.issue_date|date:"Y-m-d" }}</span>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        {% if issue.remarks %}
-                                            <span class="text-sm text-gray-600">{{ issue.remarks|truncatewords:5 }}</span>
-                                        {% else %}
-                                            <span class="text-sm text-gray-400">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <button onclick="window.location.href='#'" class="text-blue-600 hover:text-blue-800" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button onclick="window.location.href='#'" class="text-orange-600 hover:text-orange-800" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button onclick="return confirm('Are you sure?')" class="text-red-600 hover:text-red-800" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="px-8 py-16 text-center">
-                        <div class="text-gray-300 text-6xl mb-4">
-                            <i class="fas fa-inbox"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Issues Found</h3>
-                        <p class="text-gray-500 mb-6">Get started by creating your first issue.</p>
-                        <button onclick="window.location.href='#'" class="px-6 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors inline-flex items-center gap-2">
-                            <i class="fas fa-plus"></i>
-                            <span>Create First Issue</span>
-                        </button>
-                    </div>
-                    {% endif %}
+                                <td class="px-6 py-4">
+                                    {% if issue.remarks %}
+                                    <span class="text-sm text-gray-600">{{ issue.remarks|truncatewords:5 }}</span>
+                                    {% else %}
+                                    <span class="text-sm text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button onclick="window.location.href='#'"
+                                            class="text-blue-600 hover:text-blue-800" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="window.location.href='#'"
+                                            class="text-orange-600 hover:text-orange-800" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="return confirm('Are you sure?')"
+                                            class="text-red-600 hover:text-red-800" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <!-- 🧾 Add Issue Modal -->
-            <div id="addIssueModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
-                    <div class="flex justify-between">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Issue</h2>
-                        <button><span class="material-icons-outlined text-sm ">close</span></button>
-                        
+                {% else %}
+                <div class="px-8 py-16 text-center">
+                    <div class="text-gray-300 text-6xl mb-4">
+                        <i class="fas fa-inbox"></i>
                     </div>
-
-                    <form id="issueForm" method="POST" class="space-y-6">
-    {% csrf_token %}
-    
-    <!-- Issued To Employee -->
-    <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-            <i class="fas fa-user mr-2 text-primary"></i>
-            Issued To Employee
-            <span class="text-red-500 ml-1">*</span>
-        </label>
-        <select name="issued_to" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300">
-            <option value="">Select Employee</option>
-            {% for emp in employees %}
-            <option value="{{ emp.id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <!-- Project -->
-    <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-            <i class="fas fa-project-diagram mr-2 text-primary"></i>
-            Project
-            <span class="text-gray-400 text-xs ml-1">(Optional)</span>
-        </label>
-        <select name="project" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300">
-            <option value="">Select Project</option>
-            {% for proj in projects %}
-            <option value="{{ proj.id }}">{{ proj.project_name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <!-- Items Section -->
-    <div>
-        <div class="flex items-center justify-between mb-3">
-            <label class="block text-sm font-semibold text-gray-700">
-                <i class="fas fa-box mr-2 text-primary"></i>
-                Items to Issue
-                <span class="text-red-500 ml-1">*</span>
-            </label>
-            <button type="button" onclick="addRow()" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-all duration-200 hover:shadow-lg inline-flex items-center gap-2">
-                <i class="fas fa-plus"></i>
-                Add Item
-            </button>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No Issues Found</h3>
+                    <p class="text-gray-500 mb-6">Get started by creating your first issue.</p>
+                    <button onclick="window.location.href='#'"
+                        class="px-6 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors inline-flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Create First Issue</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        
-        <div id="itemContainer" class="space-y-3">
-            <!-- Item Row -->
-            <div class="item-row bg-gray-50 p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-200">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <!-- Item Select -->
-                    <div class="md:col-span-7">
-                        <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                            <i class="fas fa-tag mr-1"></i>Item Name
+        <!-- 🧾 Add Issue Modal -->
+        <div id="addIssueModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
+                <div class="flex justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Issue</h2>
+                    <button id="closeModalBtn2" class="absolute top-2 right-2">
+                        <span class="material-icons-outlined text-sm">close</span>
+                    </button>
+                </div>
+                <form id="issueForm" method="POST" class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Issued To Employee -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-primary"></i>
+                            Issued To Employee
+                            <span class="text-red-500 ml-1">*</span>
                         </label>
-                        <select name="items[]" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
-                            <option value="">Select Item</option>
-                            {% for item in items %}
-                            <option value="{{ item.id }}">{{ item.name }} - Stock: {{ item.current_stock }} {{ item.default_unit_of_measure }}</option>
+                        <select name="issued_to" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300">
+                            <option value="">Select Employee</option>
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    
-                    <!-- Quantity Input -->
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                            <i class="fas fa-hashtag mr-1"></i>Quantity
+
+                    <!-- Project -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-project-diagram mr-2 text-primary"></i>
+                            Project
+                            <span class="text-gray-400 text-xs ml-1">(Optional)</span>
                         </label>
-                        <input type="number" name="quantities[]" min="1" required placeholder="Enter quantity" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                        <select name="project"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300">
+                            <option value="">Select Project</option>
+                            {% for proj in projects %}
+                            <option value="{{ proj.id }}">{{ proj.project_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    
-                    <!-- Remove Button -->
-                    <div class="md:col-span-1 flex items-end">
-                        <button type="button" onclick="removeRow(this)" class="w-full md:w-auto px-1 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200 font-medium" title="Remove Item">
-                            <span class="material-icons-outlined text-xs ">remove</span>
+
+                    <!-- Items Section -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                <i class="fas fa-box mr-2 text-primary"></i>
+                                Items to Issue
+                                <span class="text-red-500 ml-1">*</span>
+                            </label>
+                            <button type="button" onclick="addRow()"
+                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-all duration-200 hover:shadow-lg inline-flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Add Item
+                            </button>
+                        </div>
+
+                        <div id="itemContainer" class="space-y-3">
+                            <!-- Item Row -->
+                            <div
+                                class="item-row bg-gray-50 p-4 rounded-xl border-2 border-gray-200 hover:border-primary transition-all duration-200">
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                                    <!-- Item Select -->
+                                    <div class="md:col-span-7">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                            <i class="fas fa-tag mr-1"></i>Item Name
+                                        </label>
+                                        <select name="items[]" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-sm">
+                                            <option value="">Select Item</option>
+                                            {% for item in items %}
+                                                <option value="{{ item.item_code }}">
+                                                        {{ item.name }} - Stock: {{ item.current_stock }} {{ item.default_unit_of_measure }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <!-- Quantity Input -->
+                                    <div class="md:col-span-4">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                            <i class="fas fa-hashtag mr-1"></i>Quantity
+                                        </label>
+                                        <input type="number" name="quantities[]" min="1" required
+                                            placeholder="Enter quantity"
+                                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                                    </div>
+
+                                    <!-- Remove Button -->
+                                    <div class="md:col-span-1 flex items-end">
+                                        <button type="button" onclick="removeRow(this)"
+                                            class="w-full md:w-auto px-1 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200 font-medium"
+                                            title="Remove Item">
+                                            <span class="material-icons-outlined text-xs ">remove</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-comment-alt mr-2 text-primary"></i>
+                            Remarks / Notes
+                            <span class="text-gray-400 text-xs ml-1">(Optional)</span>
+                        </label>
+                        <textarea name="remarks" rows="4"
+                            placeholder="Add any additional notes, comments, or special instructions..."
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300 resize-none"></textarea>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t-2 border-gray-200">
+                        <button type="button" onclick="resetForm()"
+                            class="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200 hover:shadow-md inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-undo"></i>
+                            Reset Form
+                        </button>
+                        <button type="submit"
+                            class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-200 hover:shadow-lg inline-flex items-center justify-center gap-2">
+                            <i class="fas fa-check-circle"></i>
+                            Submit Issue
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Remarks -->
-    <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-            <i class="fas fa-comment-alt mr-2 text-primary"></i>
-            Remarks / Notes
-            <span class="text-gray-400 text-xs ml-1">(Optional)</span>
-        </label>
-        <textarea name="remarks" rows="4" placeholder="Add any additional notes, comments, or special instructions..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white transition-all duration-200 hover:border-gray-300 resize-none"></textarea>
-    </div>
-
-    <!-- Form Actions -->
-    <div class="flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t-2 border-gray-200">
-        <button type="button" onclick="resetForm()" class="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200 hover:shadow-md inline-flex items-center justify-center gap-2">
-            <i class="fas fa-undo"></i>
-            Reset Form
-        </button>
-        <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-200 hover:shadow-lg inline-flex items-center justify-center gap-2">
-            <i class="fas fa-check-circle"></i>
-            Submit Issue
-        </button>
-    </div>
-</form>
-                </div>
-            </div>
-
-        </main>
+    </main>
     </div>
     <script>
+        const closeBtn2 = document.getElementById("closeModalBtn2");
+        const modal = document.getElementById("addIssueModal");
+
+        closeBtn2.addEventListener("click", () => modal.classList.add("hidden"));
         // Add New Item Row with Animation
-function addRow() {
-    const container = document.getElementById('itemContainer');
-    const firstRow = container.children[0];
-    const newRow = firstRow.cloneNode(true);
-    
-    // Reset all inputs in the new row
-    newRow.querySelectorAll('select').forEach(select => {
-        select.selectedIndex = 0;
-    });
-    newRow.querySelectorAll('input').forEach(input => {
-        input.value = '';
-    });
-    
-    // Add smooth animation
-    newRow.style.opacity = '0';
-    newRow.style.transform = 'translateY(-10px)';
-    container.appendChild(newRow);
-    
-    setTimeout(() => {
-        newRow.style.transition = 'all 0.3s ease';
-        newRow.style.opacity = '1';
-        newRow.style.transform = 'translateY(0)';
-    }, 10);
-}
-
-// Remove Item Row with Animation
-function removeRow(btn) {
-    const container = document.getElementById('itemContainer');
-    const rows = document.querySelectorAll('.item-row');
-    const row = btn.closest('.item-row');
-    
-    if (rows.length > 1) {
-        // Animate removal
-        row.style.transition = 'all 0.3s ease';
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(20px)';
-        
-        setTimeout(() => {
-            row.remove();
-        }, 300);
-    } else {
-        // Show notification with better styling
-        showNotification('⚠️ At least one item is required for an issue.', 'warning');
-    }
-}
-
-// Open Issue Modal
-function openIssueModal() {
-    document.getElementById('addIssueModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
-}
-
-// Close Issue Modal
-function closeIssueModal() {
-    document.getElementById('addIssueModal').classList.add('hidden');
-    document.body.style.overflow = 'auto'; // Restore scroll
-}
-
-// Reset Form
-function resetForm() {
-    if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
-        document.getElementById('addIssueForm').reset();
-        
-        // Keep only one item row
-        const container = document.getElementById('itemContainer');
-        const rows = container.querySelectorAll('.item-row');
-        rows.forEach((row, index) => {
-            if (index > 0) row.remove();
-        });
-        
-        showNotification('🔄 Form has been reset', 'info');
-    }
-}
-
-// Enhanced Notification System
-function showNotification(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    
-    // Set color based on type
-    const colors = {
-        success: 'bg-green-600',
-        error: 'bg-red-600',
-        warning: 'bg-orange-600',
-        info: 'bg-blue-600'
-    };
-    
-    toast.className = `fixed bottom-6 right-6 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-2xl z-50 transform transition-all duration-300 flex items-center gap-3`;
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(20px)';
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // Animate out and remove
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Form Submission with Enhanced Validation
-document.getElementById('addIssueForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    
-    // Client-side validation
-    const isValid = validateForm(form);
-    if (!isValid) {
-        return;
-    }
-    
-    // Show loading state
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
-    
-    const formData = new FormData(form);
-
-    try {
-        const response = await fetch("{% url 'add_issue' %}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-        
-        const data = await response.json();
-
-        if (data.success) {
-            closeIssueModal();
-            form.reset();
-            
-            // Keep only one item row
+        function addRow() {
             const container = document.getElementById('itemContainer');
-            const rows = container.querySelectorAll('.item-row');
-            rows.forEach((row, index) => {
-                if (index > 0) row.remove();
+            const firstRow = container.children[0];
+            const newRow = firstRow.cloneNode(true);
+
+            // Reset all inputs in the new row
+            newRow.querySelectorAll('select').forEach(select => {
+                select.selectedIndex = 0;
             });
-            
-            showNotification('✅ Issue added successfully!', 'success');
-            
-            // Reload page or update table after 1 second
+            newRow.querySelectorAll('input').forEach(input => {
+                input.value = '';
+            });
+
+            // Add smooth animation
+            newRow.style.opacity = '0';
+            newRow.style.transform = 'translateY(-10px)';
+            container.appendChild(newRow);
+
             setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showNotification('⚠️ ' + (data.error || 'Failed to add issue.'), 'error');
+                newRow.style.transition = 'all 0.3s ease';
+                newRow.style.opacity = '1';
+                newRow.style.transform = 'translateY(0)';
+            }, 10);
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('❌ Network error. Please try again.', 'error');
-    } finally {
-        // Restore button state
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-    }
-});
 
-// Form Validation Function
-function validateForm(form) {
-    const issuedTo = form.querySelector('select[name="issued_to"]').value;
-    const items = form.querySelectorAll('select[name="items[]"]');
-    const quantities = form.querySelectorAll('input[name="quantities[]"]');
-    
-    // Check if employee is selected
-    if (!issuedTo) {
-        showNotification('❌ Please select an employee', 'error');
-        return false;
-    }
-    
-    // Check if at least one item is selected
-    if (items.length === 0) {
-        showNotification('❌ Please add at least one item', 'error');
-        return false;
-    }
-    
-    // Validate each item row
-    for (let i = 0; i < items.length; i++) {
-        if (!items[i].value) {
-            showNotification('❌ Please select an item for all rows', 'error');
-            return false;
-        }
-        
-        const qty = quantities[i].value;
-        if (!qty || qty < 1) {
-            showNotification('❌ Please enter a valid quantity for all items', 'error');
-            return false;
-        }
-        
-        // Check against max stock if available
-        const max = quantities[i].getAttribute('max');
-        if (max && parseInt(qty) > parseInt(max)) {
-            showNotification(`❌ Quantity exceeds available stock (${max}) for item ${i + 1}`, 'error');
-            return false;
-        }
-    }
-    
-    return true;
-}
+        // Remove Item Row with Animation
+        function removeRow(btn) {
+            const container = document.getElementById('itemContainer');
+            const rows = document.querySelectorAll('.item-row');
+            const row = btn.closest('.item-row');
 
-// Real-time Stock Validation
-document.getElementById('itemContainer').addEventListener('change', function(e) {
-    if (e.target.matches('select[name="items[]"]')) {
-        const selectedOption = e.target.options[e.target.selectedIndex];
-        const stockText = selectedOption.text;
-        
-        // Extract stock number from text like "Item Name - Stock: 50 units"
-        const stockMatch = stockText.match(/Stock:\s*(\d+)/);
-        
-        if (stockMatch) {
-            const availableStock = parseInt(stockMatch[1]);
-            const quantityInput = e.target.closest('.item-row').querySelector('input[name="quantities[]"]');
-            
-            // Set max attribute
-            quantityInput.setAttribute('max', availableStock);
-            quantityInput.setAttribute('title', `Maximum available: ${availableStock}`);
-            
-            // Show warning if stock is low
-            if (availableStock < 10) {
-                showNotification(`⚠️ Low stock alert: Only ${availableStock} units available`, 'warning');
+            if (rows.length > 1) {
+                // Animate removal
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+
+                setTimeout(() => {
+                    row.remove();
+                }, 300);
+            } else {
+                // Show notification with better styling
+                showNotification('⚠️ At least one item is required for an issue.', 'warning');
             }
         }
-    }
-});
 
-// Close modal on outside click
-document.getElementById('addIssueModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeIssueModal();
-    }
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const modal = document.getElementById('addIssueModal');
-        if (modal && !modal.classList.contains('hidden')) {
-            closeIssueModal();
+        // Open Issue Modal
+        function openIssueModal() {
+            document.getElementById('addIssueModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
         }
-    }
-});
 
-// Prevent form submission on Enter key (except in textarea)
-document.getElementById('addIssueForm')?.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-    }
-});
-        </script>
+        // Close Issue Modal
+        function closeIssueModal() {
+            document.getElementById('addIssueModal').classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore scroll
+        }
+
+        // Reset Form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+                document.getElementById('addIssueForm').reset();
+
+                // Keep only one item row
+                const container = document.getElementById('itemContainer');
+                const rows = container.querySelectorAll('.item-row');
+                rows.forEach((row, index) => {
+                    if (index > 0) row.remove();
+                });
+
+                showNotification('🔄 Form has been reset', 'info');
+            }
+        }
+
+        // Enhanced Notification System
+        function showNotification(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+
+            // Set color based on type
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                warning: 'bg-orange-600',
+                info: 'bg-blue-600'
+            };
+
+            toast.className = `fixed bottom-6 right-6 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-2xl z-50 transform transition-all duration-300 flex items-center gap-3`;
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Form Submission with Enhanced Validation
+        document.getElementById('addIssueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+
+            // Client-side validation
+            const isValid = validateForm(form);
+            if (!isValid) {
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch("{% url 'add_issue' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    closeIssueModal();
+                    form.reset();
+
+                    // Keep only one item row
+                    const container = document.getElementById('itemContainer');
+                    const rows = container.querySelectorAll('.item-row');
+                    rows.forEach((row, index) => {
+                        if (index > 0) row.remove();
+                    });
+
+                    showNotification('✅ Issue added successfully!', 'success');
+
+                    // Reload page or update table after 1 second
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('⚠️ ' + (data.error || 'Failed to add issue.'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Network error. Please try again.', 'error');
+            } finally {
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        // Form Validation Function
+        function validateForm(form) {
+            const issuedTo = form.querySelector('select[name="issued_to"]').value;
+            const items = form.querySelectorAll('select[name="items[]"]');
+            const quantities = form.querySelectorAll('input[name="quantities[]"]');
+
+            // Check if employee is selected
+            if (!issuedTo) {
+                showNotification('❌ Please select an employee', 'error');
+                return false;
+            }
+
+            // Check if at least one item is selected
+            if (items.length === 0) {
+                showNotification('❌ Please add at least one item', 'error');
+                return false;
+            }
+
+            // Validate each item row
+            for (let i = 0; i < items.length; i++) {
+                if (!items[i].value) {
+                    showNotification('❌ Please select an item for all rows', 'error');
+                    return false;
+                }
+
+                const qty = quantities[i].value;
+                if (!qty || qty < 1) {
+                    showNotification('❌ Please enter a valid quantity for all items', 'error');
+                    return false;
+                }
+
+                // Check against max stock if available
+                const max = quantities[i].getAttribute('max');
+                if (max && parseInt(qty) > parseInt(max)) {
+                    showNotification(`❌ Quantity exceeds available stock (${max}) for item ${i + 1}`, 'error');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Real-time Stock Validation
+        document.getElementById('itemContainer').addEventListener('change', function (e) {
+            if (e.target.matches('select[name="items[]"]')) {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const stockText = selectedOption.text;
+
+                // Extract stock number from text like "Item Name - Stock: 50 units"
+                const stockMatch = stockText.match(/Stock:\s*(\d+)/);
+
+                if (stockMatch) {
+                    const availableStock = parseInt(stockMatch[1]);
+                    const quantityInput = e.target.closest('.item-row').querySelector('input[name="quantities[]"]');
+
+                    // Set max attribute
+                    quantityInput.setAttribute('max', availableStock);
+                    quantityInput.setAttribute('title', `Maximum available: ${availableStock}`);
+
+                    // Show warning if stock is low
+                    if (availableStock < 10) {
+                        showNotification(`⚠️ Low stock alert: Only ${availableStock} units available`, 'warning');
+                    }
+                }
+            }
+        });
+
+        // Close modal on outside click
+        document.getElementById('addIssueModal')?.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeIssueModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('addIssueModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeIssueModal();
+                }
+            }
+        });
+
+        // Prevent form submission on Enter key (except in textarea)
+        document.getElementById('addIssueForm')?.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+    </script>
 
 </body>
-{% endblock  %}
+{% endblock %}
