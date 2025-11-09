@@ -17,6 +17,7 @@ class Employee(models.Model):
 
 
 class Supplier(models.Model):
+    supplier_id = models.CharField(max_length=421, unique=True, null=True)
     name = models.CharField(max_length=100)
     contact_person = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True)
@@ -41,6 +42,7 @@ class Item(models.Model):
     warrenty = models.DateField(null=True,blank=True,help_text="Warrenty Expire Date, if available")
     default_unit_of_measure = models.CharField(max_length=20)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, blank=True, null=True)
     current_stock = models.IntegerField(default=0)
     reorder_level = models.IntegerField(default=5)
 
@@ -55,12 +57,13 @@ class Purchase(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='purchases')
     quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_price = models.FloatField()
     total_cost = models.DecimalField(max_digits=12, decimal_places=2, editable=False)
     purchase_date = models.DateField(default=timezone.now)
 
     def save(self, *args, **kwargs):
         # Calculate total cost
+        self.unit_price = self.item.unit_price
         self.total_cost = self.quantity * self.unit_price
         super().save(*args, **kwargs)
 
@@ -72,6 +75,7 @@ class Purchase(models.Model):
         return f"Purchase {self.purchase_no} - {self.item.name} -- {Item.objects.all()}"
    
 class Project(models.Model):
+    project_id = models.CharField(max_length=421, unique=True, null=True)
     project_name = models.CharField(max_length=100)
     responsible_person = models.ForeignKey(Employee, on_delete=models.CASCADE)
 

@@ -14,13 +14,13 @@ from django.db.models import Q
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
-from .models import Issue, Employee, Project, Item
+from .models import Issue, Employee, Project, Item, Supplier, Purchase
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
-
+import uuid
 
 
 def issue_list(request):
@@ -172,6 +172,7 @@ def item_tab(request):
     filter_type = request.GET.get('filter', 'all')
     search_query = request.GET.get('search', '')
     categories = Category.objects.all()
+    suppliers = Supplier.objects.all()
 
     # Filter logic
     if filter_type == 'low_stock':
@@ -191,6 +192,7 @@ def item_tab(request):
         'search_query': search_query,
         'items': items,
         'categories':categories,
+        'suppliers':suppliers,
     }
     return render(request, 'inventory/items.html', context)
 
@@ -242,6 +244,7 @@ def add_item(request):
         default_unit_of_measure = request.POST.get('default_unit_of_measure', '').strip()
         unit_price_raw = request.POST.get('unit_price', '').strip()
         current_stock_raw = request.POST.get('current_stock', '').strip()
+        supplier_id = request.POST.get('supplier_id').strip()
         reorder_level_raw = request.POST.get('reorder_level', '').strip()
         warranty_raw = request.POST.get('warrenty') or request.POST.get('warranty')  # accept both spellings
 
@@ -256,6 +259,12 @@ def add_item(request):
             category_obj = Category.objects.filter(category_id=category_id).first()
             if not category_obj:
                 return JsonResponse({'success': False, 'error': 'Selected category not found'}, status=400)
+        
+        supplier_obj =None
+        if supplier_id:
+            supplier_obj = Supplier.objects.filter(supplier_id=supplier_id).first()
+            if not supplier_obj:
+                return JsonResponse({'success': False, 'error': 'Selected Supplier not found'}, status=400)
 
         # Convert numeric fields safely
         try:
@@ -291,6 +300,7 @@ def add_item(request):
             warrenty=warranty,
             default_unit_of_measure=default_unit_of_measure,
             unit_price=unit_price,
+            supplier=supplier_obj,
             current_stock=current_stock,
             reorder_level=reorder_level,
         )
@@ -380,3 +390,187 @@ def add_issue(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def supplier_list(request):
+    suppliers = Supplier.objects.all()
+    query = request.GET.get('q', '')
+    if query:
+        suppliers = suppliers.filter(
+            Q(name__icontains=query) | 
+            Q(contact_person__icontains=query) | 
+            Q(phone__icontains=query)
+        )
+    return render(request, 'inventory/supplier_list.html', {'suppliers': suppliers, 'query': query, })
+
+def add_supplier(request):
+    if request.method == 'POST':
+        supplier = Supplier(
+            supplier_id=str(uuid.uuid4()),
+            name=request.POST['name'],
+            contact_person=request.POST.get('contact_person'),
+            phone=request.POST.get('phone'),
+            email=request.POST.get('email'),
+            address=request.POST.get('address'),
+        )
+        supplier.save()
+        messages.success(request, 'Supplier added successfully!')
+        return redirect('supplier_list')
+    return redirect('supplier_list')
+
+def edit_supplier(request, supplier_id):
+    supplier = get_object_or_404(Supplier, id=supplier_id)
+    if request.method == 'POST':
+        supplier.name = request.POST['name']
+        supplier.contact_person = request.POST.get('contact_person')
+        supplier.phone = request.POST.get('phone')
+        supplier.email = request.POST.get('email')
+        supplier.address = request.POST.get('address')
+        supplier.save()
+        messages.success(request, 'Supplier updated successfully!')
+        return redirect('supplier_list')
+    return render(request, 'edit_supplier.html', {'supplier': supplier})
+
+def delete_supplier(request, supplier_id):
+    supplier = get_object_or_404(Supplier, id=supplier_id)
+    supplier.delete()
+    messages.success(request, 'Supplier deleted successfully!')
+    return redirect('supplier_list')
+
+def generate_project_id():
+    return f"PRJ-{uuid.uuid4().hex[:8].upper()}"
+
+def project_list(request):
+    query = request.GET.get('q', '')
+    projects = Project.objects.all()
+
+    if query:
+        projects = projects.filter(project_name__icontains=query)
+
+    employees = Employee.objects.all()
+
+    if request.method == 'POST':
+        project_name = request.POST.get('project_name', '').strip()
+        responsible_person_id = request.POST.get('responsible_person')
+
+        if not project_name:
+            return JsonResponse({'success': False, 'error': 'Project name is required'}, status=400)
+
+        emp_obj = Employee.objects.filter(id=responsible_person_id).first() if responsible_person_id else None
+
+        Project.objects.create(
+            project_id=generate_project_id(),
+            project_name=project_name,
+            responsible_person=emp_obj
+        )
+
+        return redirect('project_list')
+
+    context = {
+        'projects': projects,
+        'employees': employees,
+        'query': query
+    }
+    return render(request, 'inventory/project_list.html', context)
+
+
+def project_edit(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    employees = Employee.objects.all()
+
+    if request.method == 'POST':
+        project.project_name = request.POST.get('project_name', project.project_name)
+        responsible_person_id = request.POST.get('responsible_person')
+        if responsible_person_id:
+            project.responsible_person = Employee.objects.filter(id=responsible_person_id).first()
+        project.save()
+        return redirect('project_list')
+
+    return render(request, 'inventory/project_edit.html', {'project': project, 'employees': employees})
+
+
+def project_delete(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    project.delete()
+    return redirect('project_list')
+
+def get_item_price(request):
+    item_id = request.GET.get('item_id')
+    try:
+        item = Item.objects.get(id=item_id)
+        return JsonResponse({'unit_price': float(item.unit_price)})
+    except Item.DoesNotExist:
+        return JsonResponse({'unit_price': 0})
+    
+
+def generate_purchase_no():
+    return f"P-{uuid.uuid4().hex[:8].upper()}"
+
+def purchase_list(request):
+    purchases = Purchase.objects.select_related('supplier', 'item').order_by('-purchase_date')
+    total_qty = sum(p.quantity for p in purchases)
+    total_cost = sum(p.total_cost for p in purchases)
+    return render(request, 'inventory/purchases.html', {'purchases': purchases,'total_qty': total_qty,'total_cost': total_cost})
+
+def add_purchase(request):
+    if request.method == 'POST':
+        supplier = Supplier.objects.get(id=request.POST.get('supplier'))
+
+        items = request.POST.getlist('item[]')
+        quantities = request.POST.getlist('quantity[]')
+        prices = request.POST.getlist('unit_price[]')
+
+        for item_id, qty, price in zip(items, quantities, prices):
+            item = Item.objects.get(id=item_id)
+            qty = int(qty)
+            price = item.unit_price 
+
+            Purchase.objects.create(
+                purchase_no=generate_purchase_no(),
+                supplier=supplier,
+                item=item,
+                quantity=qty,
+                unit_price=price,
+                total_cost=qty * price,
+                purchase_date=timezone.now()
+            )
+
+        return redirect('/purchases')  # Correct redirect syntax
+
+    suppliers = Supplier.objects.all()
+    items = Item.objects.all()
+    return render(request, 'inventory/add_purchase.html', {'suppliers': suppliers, 'items': items})
+
+def employee_list(request):
+    query = request.GET.get('q', '')
+    if query:
+        employees = Employee.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query)
+        )
+    else:
+        employees = Employee.objects.all()
+
+    return render(request, 'inventory/employee_list.html', {'employees': employees, 'query': query})
+
+def add_employee(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        phone_number = request.POST.get('phone_number')
+        department = request.POST.get('department')
+        position = request.POST.get('position')
+
+        # generate a unique employee ID
+        employee_id = f"EMP-{uuid.uuid4().hex[:6].upper()}"
+
+        Employee.objects.create(
+            employee_id=employee_id,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            department=department,
+            position=position
+        )
+        return redirect('employee_list')
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+

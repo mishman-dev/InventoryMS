@@ -1,0 +1,127 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Suppliers | Inventory Management{% endblock %}
+{% block content %}
+{% load static %}
+
+<body class="bg-gray-100 font-sans">
+  <div class="mx-auto py-2 px-6">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-2xl p-6 mb-8 animate-slideDown flex justify-between">
+      <h1
+        class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        Supplier Management
+      </h1>
+       <div class="flex gap-8">
+            <form method="GET" class="flex items-center gap-2">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search suppliers..."
+                    class="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none w-60 shadow-sm">
+            </form>
+            <button onclick="toggleModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium flex items-center">
+                <span class="material-icons-outlined text-white text-sm mr-1">add</span>
+            Add Supplier
+            </button>
+       </div>
+    </div>
+
+    <!-- Supplier List Table -->
+    <div class="overflow-hidden rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Supplier ID</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Name</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Contact Person</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Phone</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Email</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Address</th>
+            <th class="px-6 py-3 text-center text-sm font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for supplier in suppliers %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-gray-600 font-mono">{{ supplier.supplier_id }}</td>
+            <td class="px-6 py-4 text-gray-800 font-semibold">{{ supplier.name }}</td>
+            <td class="px-6 py-4 text-gray-700">{{ supplier.contact_person|default:"-" }}</td>
+            <td class="px-6 py-4 text-gray-700">{{ supplier.phone|default:"-" }}</td>
+            <td class="px-6 py-4 text-gray-700">{{ supplier.email|default:"-" }}</td>
+            <td class="px-6 py-4 text-gray-700">{{ supplier.address|default:"-" }}</td>
+            <td class="px-6 py-4 text-center text-sm flex">
+              <a href="{% url 'edit_supplier' supplier.id %}"
+                class="inline-block text-indigo-600 hover:text-indigo-800 transition transform hover:scale-110 mx-2">
+                ✏️ Edit
+              </a>
+              <a href="{% url 'delete_supplier' supplier.id %}"
+                onclick="return confirm('Are you sure you want to delete {{ supplier.name }}?')"
+                class="inline-block text-red-600 hover:text-red-800 transition transform hover:scale-110 mx-2">
+                🗑️ Delete
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-6 text-gray-500">No suppliers found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-96">
+      <h2 class="text-xl font-bold mb-4 text-gray-800">Add New Supplier</h2>
+      <form method="POST" action="{% url 'add_supplier' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <input name="name" type="text" required placeholder="Supplier Name"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="mb-3">
+          <input name="contact_person" type="text" placeholder="Contact Person"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="mb-3">
+          <input name="phone" type="text" placeholder="Phone"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="mb-3">
+          <input name="email" type="email" placeholder="Email"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="mb-3">
+          <textarea name="address" rows="3" placeholder="Address"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="toggleModal()"
+            class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">Cancel</button>
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal() {
+      const modal = document.getElementById("modal");
+      modal.classList.toggle("hidden");
+      modal.classList.toggle("flex");
+    }
+    const searchInput = document.getElementById("supplierSearch");
+    const rows = document.querySelectorAll(".supplier-row");
+
+    searchInput.addEventListener("keyup", () => {
+      const query = searchInput.value.toLowerCase();
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? "" : "none";
+      });
+    });
+  </script>
+</body>
+
+{% endblock %}

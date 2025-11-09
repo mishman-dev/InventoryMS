@@ -1,0 +1,49 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Purchases | Inventory Management{% endblock %}
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-slideDown flex justify-between items-center">
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Project Management</h1>
+      <a href="{% url 'add_purchase' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium flex items-center">
+        <span class="material-icons-outlined text-white text-sm mr-1">add</span>
+        Add Purchase
+      </a>
+    </div>
+
+      <div class="overflow-hidden rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 bg-white">
+        <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2">#</th>
+          <th class="p-2">Purchase No</th>
+          <th class="p-2">Supplier</th>
+          <th class="p-2">Item</th>
+          <th class="p-2">Qty</th>
+          <th class="p-2">Unit Price</th>
+          <th class="p-2">Total Cost</th>
+          <th class="p-2">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in purchases %}
+        <tr class="border-t hover:bg-gray-50">
+          <td class="p-2">{{ forloop.counter }}</td>
+          <td class="p-2">{{ p.purchase_no }}</td>
+          <td class="p-2">{{ p.supplier.name }}</td>
+          <td class="p-2">{{ p.item.name }}</td>
+          <td class="p-2">{{ p.quantity }}</td>
+          <td class="p-2">{{ p.unit_price }}</td>
+          <td class="p-2 font-medium">{{ p.total_cost }}</td>
+          <td class="p-2">{{ p.purchase_date }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center p-4 text-gray-500">No purchases found</td></tr>
+        {% endfor %}    
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

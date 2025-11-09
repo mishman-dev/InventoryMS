@@ -1,0 +1,108 @@
+{% extends 'inventory/base.html' %}
+{% block title %}Projects | Inventory Management{% endblock %}
+{% block content %}
+{% load static %}
+
+<body class="bg-gray-100 font-sans">
+  <div class="mx-auto px-2">
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 animate-slideDown flex justify-between items-center">
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Project Management</h1>
+      <div class="flex gap-8">
+        <form method="GET" action="" class="">
+          <div class="flex items-center w-full bg-white shadow rounded-lg overflow-hidden">
+            <input type="text" name="q" placeholder="Search project..." value="{{ query }}"
+              class="flex-grow px-4 py-2 focus:outline-none text-gray-700">
+            <!-- <button type="submit"
+              class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700 transition-all">Search</button> -->
+          </div>
+        </form>
+        <button onclick="toggleModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm text-sm font-medium flex items-center">
+        <span class="material-icons-outlined text-white text-sm mr-1">add</span>
+        Add Project
+      </button>
+      </div>
+    </div>
+
+
+    <!-- Project Table -->
+    <div class="overflow-hidden rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200 bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Project ID</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Project Name</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold">Responsible Person</th>
+            <th class="px-6 py-3 text-center text-sm font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          {% for project in projects %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-gray-600 font-mono">{{ project.project_id }}</td>
+            <td class="px-6 py-4 text-gray-800 font-semibold">{{ project.project_name }}</td>
+            <td class="px-6 py-4 text-gray-700">
+              {{ project.responsible_person.first_name }} {{ project.responsible_person.last_name|default:"—" }}
+            </td>
+            <td class="px-6 py-4 text-center">
+              <a href="{% url 'project_edit' project.id %}"
+                class="inline-block text-indigo-600 hover:text-indigo-800 transition transform hover:scale-110 mx-2">
+                ✏️ Edit
+              </a>
+              <a href="{% url 'project_delete' project.id %}"
+                onclick="return confirm('Are you sure you want to delete {{ project.project_name }}?')"
+                class="inline-block text-red-600 hover:text-red-800 transition transform hover:scale-110 mx-2">
+                🗑️ Delete
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-6 text-gray-500">No projects found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Project Modal -->
+  <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-96">
+      <h2 class="text-xl font-bold mb-4 text-gray-800">Add New Project</h2>
+      <form method="POST" action="">
+        {% csrf_token %}
+        <input name="project_name" type="text" required
+          placeholder="Enter project name"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none mb-4">
+
+        <select name="responsible_person" class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4">
+          <option value="">— Select Responsible Person —</option>
+          {% for emp in employees %}
+          <option value="{{ emp.employee_id }}">{{ emp.first_name }} {{ emp.last_name }}</option>
+          {% endfor %}
+        </select>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" onclick="toggleModal()"
+            class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+            Add
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal() {
+      document.getElementById("modal").classList.toggle("hidden");
+      document.getElementById("modal").classList.toggle("flex");
+    }
+  </script>
+</body>
+{% endblock %}
